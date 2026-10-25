@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Service - AutoCare Service Hub</title>
+  <meta name="description" content="Book a professional vehicle service. Enter your vehicle details, choose a service, and pick a date." />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Flatpickr Calendar -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <style>
+    .booking-page {
+      min-height: 100vh;
+      padding-top: 80px;
+      background: radial-gradient(ellipse at 10% 20%, rgba(249,115,22,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 90% 80%, rgba(59,130,246,0.04) 0%, transparent 50%),
+                  var(--bg-dark);
+    }
+    .booking-header {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+    .form-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-section-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+    .form-section-title .step-tag {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+    .brand-search-wrap {
+      position: relative;
+    }
+    .brand-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+    .brand-dropdown.open { display: block; }
+    .brand-option {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .brand-option:hover, .brand-option.active {
+      background: rgba(249,115,22,0.1);
+      color: var(--primary);
+    }
+    .brand-option .country-tag {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    .sticky-summary {
+      position: sticky;
+      top: 90px;
+    }
+    .summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+    }
+    .summary-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .no-service-msg {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 1rem;
+    }
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .time-slot {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-secondary);
+    }
+    .time-slot:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .time-slot.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    /* Model dropdown */
+    .model-select-wrap {
+      position: relative;
+    }
+    .model-select-wrap .form-control[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .model-placeholder {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .model-placeholder.ready {
+      color: var(--success);
+    }
+    @media (max-width: 900px) {
+      .booking-layout { grid-template-columns: 1fr; }
+      .sticky-summary { position: relative; top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">🚗</div>
+      <span class="nav-title">AutoCare Hub</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/book.html" class="active">Book Service</a></li>
+      <li><a href="/dashboard.html">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions" id="navActions"></div>
+    <div class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <div class="booking-page">
+    <div class="container">
+      <div class="booking-header">
+        <h1 class="page-title">📅 Book a Service</h1>
+        <p class="page-subtitle">Fill in your vehicle details and choose a convenient time slot.</p>
+      </div>
+
+      <div class="booking-layout">
+        <!-- Left: Form -->
+        <div>
+          <!-- Step 1: Vehicle Details -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <span class="step-tag">1</span> Vehicle Information
+            </h2>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="vehicleNumber">Vehicle Number *</label>
+                <div class="form-icon-wrap">
+                  <span class="form-icon">🚘</span>
+                  <input type="text" id="vehicleNumber" class="form-control" placeholder="e.g. MH12AB1234" maxlength="15" />
+                </div>
+                <div class="form-error" id="vehicleNumberError"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="vehicleModel">Vehicle Model *</label>
+                <div class="model-select-wrap form-icon-wrap">
+                  <span class="form-icon">🏎</span>
+                  <select id="vehicleModel" class="form-control" disabled onchange="updateSummary()">
+                    <option value="">— Select brand first —</option>
+                  </select>
+                </div>
+                <div class="model-placeholder" id="modelHint">👆 Select a brand to see models</div>
+                <div class="form-error" id="vehicleModelError"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="brandSearch">Vehicle Brand *</label>
+              <div class="brand-search-wrap">
+                <div class="form-icon-wrap">
+                  <span class="form-icon">🏷</span>
+                  <input type="text" id="brandSearch" class="form-control" placeholder="Search or select brand..." autocomplete="off" />
+                </div>
+                <div class="brand-dropdown" id="brandDropdown"></div>
+                <input type="hidden" id="vehicleBrand" />
+              </div>
+              <div class="form-error" id="brandError"></div>
+            </div>
+          </div>
+
+          <!-- Step 2: Select Service -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <span class="step-tag">2</span> Choose a Service
+            </h2>
+            <div id="serviceLoadingMsg" class="loading-center">
+              <div class="spinner spinner-lg" style="border-top-color:var(--primary);"></div>
+              <span>Loading services...</span>
+            </div>
+            <div class="service-select-grid" id="serviceGrid" style="display:none;"></div>
+            <div class="form-error" id="serviceError"></div>
+          </div>
+
+          <!-- Step 3: Date & Time -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <span class="step-tag">3</span> Select Date & Time
+            </h2>
+            <div class="form-group">
+              <label class="form-label" for="bookingDate">Booking Date *</label>
+              <div class="date-input-wrap">
+                <input type="text" id="bookingDate" class="form-control" placeholder="Click to pick a date" readonly style="cursor:pointer;" />
+                <span class="calendar-icon">📅</span>
+              </div>
+              <div class="form-error" id="dateError"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Preferred Time Slot</label>
+              <div class="time-slots" id="timeSlots">
+                <div class="time-slot selected" data-time="09:00 AM" onclick="selectTime(this)">09:00 AM</div>
+                <div class="time-slot" data-time="10:00 AM" onclick="selectTime(this)">10:00 AM</div>
+                <div class="time-slot" data-time="11:00 AM" onclick="selectTime(this)">11:00 AM</div>
+                <div class="time-slot" data-time="12:00 PM" onclick="selectTime(this)">12:00 PM</div>
+                <div class="time-slot" data-time="02:00 PM" onclick="selectTime(this)">02:00 PM</div>
+                <div class="time-slot" data-time="03:00 PM" onclick="selectTime(this)">03:00 PM</div>
+                <div class="time-slot" data-time="04:00 PM" onclick="selectTime(this)">04:00 PM</div>
+                <div class="time-slot" data-time="05:00 PM" onclick="selectTime(this)">05:00 PM</div>
+                <div class="time-slot" data-time="06:00 PM" onclick="selectTime(this)">06:00 PM</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="notes">Additional Notes</label>
+              <textarea id="notes" class="form-control" placeholder="Describe the issue or any special requirements..." rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Summary -->
+        <div class="sticky-summary">
+          <div class="summary-card">
+            <h3>📋 Booking Summary</h3>
+            <div id="summaryContent">
+              <p class="no-service-msg">Fill in the details to see your booking summary.</p>
+            </div>
+          </div>
+
+          <button type="button" id="submitBtn" class="btn btn-primary btn-lg" style="width:100%;" onclick="submitBooking()">
+            Confirm Booking
+          </button>
+          <p style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:0.75rem;">
+            🔒 Your data is secure. No payment required upfront.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="app.js"></script>
+  <script>
+    let services = [];
+    let selectedServiceIds = [];
+    let selectedDate = null;
+    let selectedTime = '09:00 AM';
+
+    // Require auth
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Auth.isLoggedIn()) {
+        Toast.warning('Please login to book a service');
+        setTimeout(() => window.location.href = '/login.html', 1500);
+        return;
+      }
+      initBrandSearch();
+      loadServices();
+      initDatePicker();
+    });
+
+    // ---- Flatpickr Date Picker ----
+    function initDatePicker() {
+      flatpickr('#bookingDate', {
+        minDate: 'today',
+        maxDate: new Date().fp_incr(90),
+        disable: [date => date.getDay() === 0], // Disable Sundays
+        dateFormat: 'd M Y',
+        theme: 'dark',
+        onChange: (selected, dateStr) => {
+          selectedDate = selected[0];
+          updateSummary();
+        },
+      });
+    }
+
+    // ---- Brand Search ----
+    function initBrandSearch() {
+      const input = document.getElementById('brandSearch');
+      const dropdown = document.getElementById('brandDropdown');
+      const hidden = document.getElementById('vehicleBrand');
+
+      function renderOptions(list) {
+        if (!list.length) {
+          dropdown.innerHTML = '<div class="brand-option" style="cursor:default;color:var(--text-muted);">No brands found</div>';
+        } else {
+          dropdown.innerHTML = list.map(b => `
+            <div class="brand-option" onclick="selectBrand('${b.name}', '${b.country}')">
+              <span>🚗</span>
+              <span>${b.name}</span>
+              <span class="country-tag">${b.country}</span>
+            </div>
+          `).join('');
+        }
+        dropdown.classList.add('open');
+      }
+
+      input.addEventListener('focus', () => {
+        const filtered = VEHICLE_BRANDS.sort((a,b) => a.name.localeCompare(b.name));
+        renderOptions(filtered.slice(0, 30));
+      });
+
+      input.addEventListener('input', () => {
+        const q = input.value.toLowerCase();
+        const filtered = VEHICLE_BRANDS.filter(b => b.name.toLowerCase().includes(q) || b.country.toLowerCase().includes(q));
+        renderOptions(filtered.sort((a,b) => a.name.localeCompare(b.name)));
+        hidden.value = '';
+        updateSummary();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.brand-search-wrap')) dropdown.classList.remove('open');
+      });
+    }
+
+    function selectBrand(name, country) {
+      document.getElementById('brandSearch').value = `${name} (${country})`;
+      document.getElementById('vehicleBrand').value = name;
+      document.getElementById('brandDropdown').classList.remove('open');
+      document.getElementById('brandError').textContent = '';
+
+      // Populate model dropdown
+      const modelSelect = document.getElementById('vehicleModel');
+      const modelHint   = document.getElementById('modelHint');
+      const models = getModelsForBrand(name);
+
+      modelSelect.innerHTML = '<option value="">— Select Model —</option>';
+      if (models.length) {
+        models.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = m;
+          modelSelect.appendChild(opt);
+        });
+        modelSelect.disabled = false;
+        modelHint.textContent = `✅ ${models.length} models available`;
+        modelHint.className = 'model-placeholder ready';
+      } else {
+        // Brand not in map — allow free entry via a text input fallback
+        modelSelect.innerHTML = '';
+        modelSelect.disabled = true;
+        // Swap to a text input dynamically
+        const wrap = modelSelect.parentElement;
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.id = 'vehicleModel';
+        textInput.className = 'form-control';
+        textInput.placeholder = 'Enter model name';
+        textInput.addEventListener('input', updateSummary);
+        wrap.replaceChild(textInput, modelSelect);
+        modelHint.textContent = 'ℹ️ Type your model name';
+        modelHint.className = 'model-placeholder';
+      }
+
+      updateSummary();
+    }
+
+    // ---- Load Services ----
+    async function loadServices() {
+      const res = await apiRequest('/services');
+      document.getElementById('serviceLoadingMsg').style.display = 'none';
+      document.getElementById('serviceGrid').style.display = 'grid';
+
+      if (!res.ok || !res.data.services?.length) {
+        document.getElementById('serviceGrid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔧</div><h3>No services available</h3></div>`;
+        return;
+      }
+
+      services = res.data.services;
+      document.getElementById('serviceGrid').innerHTML = services.map(s => `
+        <div class="service-select-card" id="sc_${s._id}" onclick="selectService('${s._id}')">
+          <span class="service-select-icon">${s.icon || '🔧'}</span>
+          <div class="service-select-name">${s.name}</div>
+          <div class="service-select-price">₹${s.price.toLocaleString('en-IN')}</div>
+          <div class="service-select-duration">⏱ ${s.duration}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectService(id) {
+      const index = selectedServiceIds.indexOf(id);
+      const card = document.getElementById(`sc_${id}`);
+      if (index > -1) {
+        selectedServiceIds.splice(index, 1);
+        if (card) card.classList.remove('selected');
+      } else {
+        selectedServiceIds.push(id);
+        if (card) card.classList.add('selected');
+      }
+      document.getElementById('serviceError').textContent = '';
+      updateSummary();
+    }
+
+    // ---- Time Slot ----
+    function selectTime(el) {
+      document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedTime = el.dataset.time;
+      updateSummary();
+    }
+
+    // ---- Summary Update ----
+    function updateSummary() {
+      const vehicleNum = document.getElementById('vehicleNumber').value.trim().toUpperCase();
+      const brand = document.getElementById('vehicleBrand').value;
+      const vehicleModelEl = document.getElementById('vehicleModel');
+      const model = vehicleModelEl ? vehicleModelEl.value.trim() : '';
+      const summaryEl = document.getElementById('summaryContent');
+
+      const selectedServices = services.filter(s => selectedServiceIds.includes(s._id));
+      const totalAmount = selectedServices.reduce((sum, s) => sum + s.price, 0);
+
+      const hasInfo = vehicleNum || brand || selectedServices.length > 0 || selectedDate;
+      if (!hasInfo) {
+        summaryEl.innerHTML = '<p class="no-service-msg">Fill in the details to see your booking summary.</p>';
+        return;
+      }
+
+      summaryEl.innerHTML = `
+        <div class="summary-row">
+          <span class="label">🚘 Vehicle</span>
+          <span class="value">${vehicleNum || '—'}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">🏷 Brand</span>
+          <span class="value">${brand || '—'}</span>
+        </div>
+        ${model ? `<div class="summary-row"><span class="label">🏎 Model</span><span class="value">${model}</span></div>` : ''}
+        <div class="summary-row">
+          <span class="label">🔧 Services</span>
+          <span class="value">${selectedServices.length > 0 ? selectedServices.map(s => s.name).join(', ') : '—'}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">📅 Date</span>
+          <span class="value">${selectedDate ? formatDate(selectedDate) : '—'}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">⏰ Time</span>
+          <span class="value">${selectedTime}</span>
+        </div>
+        ${selectedServices.length > 0 ? `
+        <div class="summary-row">
+          <span class="label">⏱ Total Duration</span>
+          <span class="value">${selectedServices.map(s => s.duration).join(' + ')}</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span class="label" style="font-weight:700;color:var(--text-primary);">Total Amount</span>
+          <span class="value" style="font-size:1.2rem;color:var(--primary);">₹${totalAmount.toLocaleString('en-IN')}</span>
+        </div>` : ''}
+      `;
+    }
+
+    // ---- Submit Booking ----
+    async function submitBooking() {
+      const vehicleNumber = document.getElementById('vehicleNumber').value.trim().toUpperCase();
+      const vehicleBrand = document.getElementById('vehicleBrand').value;
+      const vehicleModelEl = document.getElementById('vehicleModel');
+      const vehicleModel = vehicleModelEl ? vehicleModelEl.value.trim() : '';
+      const notes = document.getElementById('notes').value.trim();
+      const btn = document.getElementById('submitBtn');
+
+      // Clear errors
+      ['vehicleNumberError','brandError','serviceError','dateError'].forEach(id => {
+        document.getElementById(id).textContent = '';
+      });
+
+      let valid = true;
+      if (!vehicleNumber) { document.getElementById('vehicleNumberError').textContent = 'Vehicle number is required'; valid = false; }
+      if (!vehicleBrand) { document.getElementById('brandError').textContent = 'Please select a vehicle brand'; valid = false; }
+      if (!vehicleModel) {
+        const errEl = document.getElementById('vehicleModelError');
+        if (errEl) errEl.textContent = 'Please select a vehicle model';
+        valid = false;
+      }
+      if (selectedServiceIds.length === 0) { document.getElementById('serviceError').textContent = 'Please select at least one service'; valid = false; }
+      if (!selectedDate) { document.getElementById('dateError').textContent = 'Please select a booking date'; valid = false; }
+      if (!valid) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Booking...';
+
+      const res = await apiRequest('/bookings', 'POST', {
+        vehicleNumber,
+        vehicleBrand,
+        vehicleModel,
+        serviceIds: selectedServiceIds,
+        bookingDate: selectedDate.toISOString(),
+        timeSlot: selectedTime,
+        notes,
+      }, true);
+
+      if (res.ok && res.data.success) {
+        Toast.success('🎉 Booking confirmed! Redirecting...');
+        setTimeout(() => window.location.href = '/dashboard.html', 1500);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = 'Confirm Booking';
+        if (res.status === 401) {
+          Toast.error('Session expired. Please login again.');
+          setTimeout(() => window.location.href = '/login.html', 1500);
+        } else {
+          Toast.error(res.data.message || 'Booking failed. Please try again.');
+        }
+      }
+    }
+
+    // Update summary on vehicle number input
+    document.getElementById('vehicleNumber').addEventListener('input', updateSummary);
+  </script>
+</body>
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoCare Service Hub - Professional Vehicle Service Management</title>
+  <meta name="description" content="Book professional vehicle services online. Oil change, repairs, inspections and more. Fast, reliable, affordable." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding-top: 80px;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 10% 50%, rgba(249,115,22,0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(249,115,22,0.05) 0%, transparent 40%),
+        var(--bg-dark);
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(249,115,22,0.1);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 20px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      animation: fadeIn 0.6s ease;
+    }
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeIn 0.7s ease 0.1s both;
+    }
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--primary), #fb923c, #f59e0b);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite;
+    }
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      max-width: 550px;
+      line-height: 1.7;
+      animation: fadeIn 0.7s ease 0.2s both;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeIn 0.7s ease 0.3s both;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 3.5rem;
+      animation: fadeIn 0.7s ease 0.4s both;
+    }
+    .hero-stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .hero-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .hero-visual {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 45%;
+      max-width: 600px;
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .car-svg-wrap {
+      position: relative;
+    }
+    .glow-circle {
+      position: absolute;
+      border-radius: 50%;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .glow-circle-1 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(249,115,22,0.15), transparent);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Services Section */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .service-card:hover {
+      border-color: rgba(249,115,22,0.3);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-glow);
+    }
+    .service-card:hover::before {
+      opacity: 1;
+    }
+    .service-icon-wrap {
+      width: 56px;
+      height: 56px;
+      background: rgba(249,115,22,0.1);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+      transition: var(--transition);
+    }
+    .service-card:hover .service-icon-wrap {
+      background: rgba(249,115,22,0.2);
+      transform: scale(1.1);
+    }
+    .service-name {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .service-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .service-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .service-price {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .service-duration {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: var(--bg-input);
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    /* How It Works */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0.3;
+    }
+    .step-card {
+      text-align: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+    .step-number {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: white;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 0 30px rgba(249,115,22,0.4);
+      position: relative;
+      z-index: 1;
+    }
+    .step-title {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(59,130,246,0.08));
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: var(--radius-xl);
+      padding: 4rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(249,115,22,0.05) 0%, transparent 60%);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 1.5rem;
+      margin-top: 4rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+    .footer-brand p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      margin-top: 0.75rem;
+    }
+    .footer-col h4 {
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.5rem; }
+    .footer-col ul a { color: var(--text-muted); font-size: 0.875rem; transition: var(--transition); }
+    .footer-col ul a:hover { color: var(--primary); }
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    #servicesSection { scroll-margin-top: 80px; }
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card), var(--bg-card2), var(--bg-card));
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+    @media (max-width: 1024px) {
+      .hero-visual { display: none; }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid::before { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .steps-grid { grid-template-columns: 1fr; }
+      .cta-section { padding: 2.5rem 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar" id="mainNav">
+    <div class="nav-brand">
+      <div class="nav-logo">🚗</div>
+      <span class="nav-title">AutoCare Hub</span>
+    </div>
+    <ul class="nav-links" id="navMenu">
+      <li><a href="/index.html" class="active">Home</a></li>
+      <li><a href="#servicesSection">Services</a></li>
+      <li><a href="#howItWorks">How It Works</a></li>
+      <li><a href="/book.html">Book Now</a></li>
+    </ul>
+    <div class="nav-actions" id="navActions">
+      <a href="/login.html" class="btn btn-secondary btn-sm">Login</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">Register</a>
+    </div>
+    <div class="hamburger" onclick="document.getElementById('navMenu').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="container" style="width:100%">
+      <div class="hero-content">
+        <div class="hero-badge">🏆 #1 Vehicle Service Platform in Your City</div>
+        <h1 class="hero-title">
+          Your Vehicle Deserves<br>
+          <span class="highlight">Expert Care</span>
+        </h1>
+        <p class="hero-desc">
+          Book professional vehicle services in seconds. From routine maintenance to complex repairs — 
+          experienced mechanics, transparent pricing, and on-time delivery.
+        </p>
+        <div class="hero-actions">
+          <a href="/book.html" class="btn btn-primary btn-lg">
+            📅 Book a Service
+          </a>
+          <a href="#servicesSection" class="btn btn-secondary btn-lg">
+            Explore Services
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-value">5000+</div>
+            <div class="hero-stat-label">Happy Customers</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">50+</div>
+            <div class="hero-stat-label">Services Offered</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">99%</div>
+            <div class="hero-stat-label">Satisfaction Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Decorative Car SVG -->
+    <div class="hero-visual">
+      <div class="car-svg-wrap">
+        <div class="glow-circle glow-circle-1"></div>
+        <svg viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 20px 60px rgba(249,115,22,0.3))">
+          <!-- Car body -->
+          <rect x="80" y="140" width="440" height="100" rx="15" fill="#1e1e2e" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+          <!-- Car roof -->
+          <path d="M160 140 L200 80 L400 80 L440 140 Z" fill="#2d2d3f" stroke="rgba(249,115,22,0.3)" stroke-width="2"/>
+          <!-- Windows -->
+          <rect x="215" y="90" width="80" height="45" rx="5" fill="rgba(59,130,246,0.3)" stroke="rgba(59,130,246,0.5)" stroke-width="1.5"/>
+          <rect x="305" y="90" width="80" height="45" rx="5" fill="rgba(59,130,246,0.3)" stroke="rgba(59,130,246,0.5)" stroke-width="1.5"/>
+          <!-- Wheels -->
+          <circle cx="170" cy="240" r="45" fill="#111118" stroke="rgba(249,115,22,0.6)" stroke-width="3"/>
+          <circle cx="170" cy="240" r="25" fill="#1e1e2e" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+          <circle cx="170" cy="240" r="8" fill="rgba(249,115,22,0.8)"/>
+          <circle cx="430" cy="240" r="45" fill="#111118" stroke="rgba(249,115,22,0.6)" stroke-width="3"/>
+          <circle cx="430" cy="240" r="25" fill="#1e1e2e" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+          <circle cx="430" cy="240" r="8" fill="rgba(249,115,22,0.8)"/>
+          <!-- Headlights -->
+          <rect x="82" y="160" width="30" height="15" rx="5" fill="rgba(251,191,36,0.8)" filter="blur(2px)"/>
+          <rect x="488" y="160" width="30" height="15" rx="5" fill="rgba(239,68,68,0.6)"/>
+          <!-- Door lines -->
+          <line x1="300" y1="145" x2="300" y2="235" stroke="rgba(249,115,22,0.2)" stroke-width="1.5"/>
+          <!-- Spoiler / accents -->
+          <rect x="82" y="195" width="15" height="40" rx="4" fill="rgba(249,115,22,0.3)"/>
+          <!-- Speed lines -->
+          <line x1="0" y1="200" x2="60" y2="200" stroke="rgba(249,115,22,0.3)" stroke-width="2"/>
+          <line x1="0" y1="215" x2="40" y2="215" stroke="rgba(249,115,22,0.2)" stroke-width="1.5"/>
+          <line x1="0" y1="230" x2="50" y2="230" stroke="rgba(249,115,22,0.15)" stroke-width="1"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="section" id="servicesSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Our Services</span>
+        <h2 class="section-title">Everything Your Vehicle Needs</h2>
+        <p class="section-subtitle">Professional services performed by certified mechanics with genuine parts and transparent pricing.</p>
+      </div>
+      <div class="services-grid" id="servicesGrid">
+        <!-- Skeleton loaders -->
+        <div class="skeleton" style="height:200px;"></div>
+        <div class="skeleton" style="height:200px;"></div>
+        <div class="skeleton" style="height:200px;"></div>
+        <div class="skeleton" style="height:200px;"></div>
+        <div class="skeleton" style="height:200px;"></div>
+        <div class="skeleton" style="height:200px;"></div>
+      </div>
+      <div style="text-align:center; margin-top:2.5rem;">
+        <a href="/book.html" class="btn btn-primary btn-lg">Book a Service Now →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="howItWorks" style="background: rgba(255,255,255,0.01);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Process</span>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Getting your vehicle serviced has never been easier. Follow these simple steps.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Create Account</h3>
+          <p class="step-desc">Register with your name, email and phone number to get started.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Enter Vehicle Info</h3>
+          <p class="step-desc">Provide your vehicle number and select your vehicle brand from our comprehensive list.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Choose Service & Date</h3>
+          <p class="step-desc">Select the service you need and pick a convenient date from our calendar.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3 class="step-title">Get It Done</h3>
+          <p class="step-desc">Our expert team handles your vehicle and keeps you updated on the progress.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-section">
+        <div style="position:relative; z-index:1;">
+          <h2 class="section-title" style="margin-bottom:1rem;">Ready to Book Your Service?</h2>
+          <p style="color:var(--text-secondary); margin-bottom:2rem; font-size:1.05rem;">
+            Join thousands of satisfied customers who trust AutoCare Hub for their vehicle maintenance needs.
+          </p>
+          <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="/register.html" class="btn btn-primary btn-lg">Get Started Free</a>
+            <a href="/book.html" class="btn btn-secondary btn-lg">Book Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-brand" style="margin-bottom:1rem;">
+            <div class="nav-logo">🚗</div>
+            <span class="nav-title">AutoCare Hub</span>
+          </div>
+          <p>Professional vehicle service management platform. Expert mechanics, transparent pricing, and hassle-free booking.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#">Oil Change</a></li>
+            <li><a href="#">Brake Service</a></li>
+            <li><a href="#">Engine Repair</a></li>
+            <li><a href="#">Tire Service</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <ul>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/register.html">Register</a></li>
+            <li><a href="/dashboard.html">My Bookings</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2024 AutoCare Service Hub. All rights reserved.</span>
+        <span>Made with ❤️ for Vehicle Owners</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Load services
+    async function loadServices() {
+      const res = await apiRequest('/services');
+      const grid = document.getElementById('servicesGrid');
+      if (!res.ok || !res.data.services || res.data.services.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1" class="empty-state">
+            <div class="empty-icon">🔧</div>
+            <h3>No services available</h3>
+            <p>Check back soon for our services.</p>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = res.data.services.map(s => `
+        <div class="service-card" onclick="window.location.href='/book.html'">
+          <div class="service-icon-wrap">${s.icon || '🔧'}</div>
+          <h3 class="service-name">${s.name}</h3>
+          <p class="service-desc">${s.description}</p>
+          <div class="service-meta">
+            <span class="service-price">₹${s.price.toLocaleString('en-IN')}</span>
+            <span class="service-duration">⏱ ${s.duration}</span>
+          </div>
+          <div style="margin-top:0.75rem;">
+            <span class="badge badge-confirmed" style="font-size:0.7rem;">${s.category}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    loadServices();
+  </script>
+</body>
+</html>

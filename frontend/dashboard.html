@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard - AutoCare Service Hub</title>
+  <meta name="description" content="View and manage your vehicle service bookings on AutoCare Service Hub." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .dash-header {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(59,130,246,0.05));
+      border: 1px solid rgba(249,115,22,0.1);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .user-welcome {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .user-avatar-lg {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #fb923c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: var(--shadow-glow);
+    }
+    .booking-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: var(--transition);
+      margin-bottom: 1rem;
+    }
+    .booking-card:hover {
+      border-color: rgba(249,115,22,0.2);
+      box-shadow: var(--shadow-glow);
+    }
+    .booking-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .service-icon-circle {
+      width: 48px;
+      height: 48px;
+      background: rgba(249,115,22,0.1);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .booking-card-body {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+    .booking-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .booking-info-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .booking-info-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .booking-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .filter-tab {
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      background: transparent;
+    }
+    .filter-tab:hover, .filter-tab.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(249,115,22,0.05);
+    }
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .user-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .user-stat-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .user-stat-value { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+    .user-stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    @media (max-width: 768px) {
+      .user-stats { grid-template-columns: repeat(2, 1fr); }
+      .dash-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">🚗</div>
+      <span class="nav-title">AutoCare Hub</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/book.html">Book Service</a></li>
+      <li><a href="/dashboard.html" class="active">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions" id="navActions"></div>
+    <div class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="container" style="padding-top:2rem; padding-bottom:3rem;">
+      <!-- Welcome Header -->
+      <div class="dash-header">
+        <div class="user-welcome">
+          <div class="user-avatar-lg" id="userAvatar">?</div>
+          <div>
+            <h1 style="font-family:var(--font-heading); font-size:1.5rem; font-weight:800; margin-bottom:0.25rem;">
+              Welcome back, <span id="userName" style="color:var(--primary);">...</span>!
+            </h1>
+            <p style="color:var(--text-muted); font-size:0.875rem;" id="userEmail">Loading...</p>
+          </div>
+        </div>
+        <a href="/book.html" class="btn btn-primary">📅 Book New Service</a>
+      </div>
+
+      <!-- User Stats -->
+      <div class="user-stats" id="userStats">
+        <div class="user-stat-card">
+          <div class="user-stat-icon">📋</div>
+          <div class="user-stat-value" id="statTotal">0</div>
+          <div class="user-stat-label">Total Bookings</div>
+        </div>
+        <div class="user-stat-card">
+          <div class="user-stat-icon">🕐</div>
+          <div class="user-stat-value" id="statPending">0</div>
+          <div class="user-stat-label">Pending</div>
+        </div>
+        <div class="user-stat-card">
+          <div class="user-stat-icon">✅</div>
+          <div class="user-stat-value" id="statCompleted">0</div>
+          <div class="user-stat-label">Completed</div>
+        </div>
+        <div class="user-stat-card">
+          <div class="user-stat-icon">💰</div>
+          <div class="user-stat-value" id="statSpent">₹0</div>
+          <div class="user-stat-label">Total Spent</div>
+        </div>
+      </div>
+
+      <!-- Bookings List -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+        <h2 style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700;">My Service Bookings</h2>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" onclick="filterBookings('all', this)">All</button>
+        <button class="filter-tab" onclick="filterBookings('pending', this)">🕐 Pending</button>
+        <button class="filter-tab" onclick="filterBookings('confirmed', this)">✅ Confirmed</button>
+        <button class="filter-tab" onclick="filterBookings('in-progress', this)">🔧 In Progress</button>
+        <button class="filter-tab" onclick="filterBookings('completed', this)">✔️ Completed</button>
+        <button class="filter-tab" onclick="filterBookings('cancelled', this)">✕ Cancelled</button>
+      </div>
+
+      <div id="bookingsContainer">
+        <div class="loading-center">
+          <div class="spinner spinner-lg" style="border-top-color:var(--primary);"></div>
+          <span>Loading your bookings...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Confirm Modal -->
+  <div class="modal-overlay" id="cancelModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">❌ Cancel Booking</h3>
+        <div class="modal-close" onclick="Modal.hide('cancelModal')">✕</div>
+      </div>
+      <p style="color:var(--text-secondary); margin-bottom:1.5rem;">
+        Are you sure you want to cancel this booking? This action cannot be undone.
+      </p>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="Modal.hide('cancelModal')">Keep Booking</button>
+        <button class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel It</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script src="app.js"></script>
+  <script>
+    let allBookings = [];
+    let cancelBookingId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!Auth.requireAuth('/login.html')) return;
+      const user = Auth.getUser();
+      document.getElementById('userAvatar').textContent = user.name?.charAt(0).toUpperCase() || 'U';
+      document.getElementById('userName').textContent = user.name || 'User';
+      document.getElementById('userEmail').textContent = user.email;
+      await loadBookings();
+    });
+
+    async function loadBookings() {
+      const res = await apiRequest('/bookings/my', 'GET', null, true);
+      const container = document.getElementById('bookingsContainer');
+
+      if (!res.ok) {
+        if (res.status === 401) { window.location.href = '/login.html'; return; }
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div><h3>Failed to load bookings</h3></div>`;
+        return;
+      }
+
+      allBookings = res.data.bookings || [];
+      updateStats(allBookings);
+      renderBookings(allBookings);
+    }
+
+    function updateStats(bookings) {
+      document.getElementById('statTotal').textContent = bookings.length;
+      document.getElementById('statPending').textContent = bookings.filter(b => b.status === 'pending').length;
+      document.getElementById('statCompleted').textContent = bookings.filter(b => b.status === 'completed').length;
+      const spent = bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      document.getElementById('statSpent').textContent = formatCurrency(spent);
+    }
+
+    function filterBookings(status, btn) {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = status === 'all' ? allBookings : allBookings.filter(b => b.status === status);
+      renderBookings(filtered);
+    }
+
+    function renderBookings(bookings) {
+      const container = document.getElementById('bookingsContainer');
+      if (!bookings.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No bookings found</h3>
+            <p>Book your first vehicle service today!</p>
+            <a href="/book.html" class="btn btn-primary" style="margin-top:1.5rem;">Book a Service</a>
+          </div>`;
+        return;
+      }
+      container.innerHTML = bookings.map(b => {
+        const serviceNames = b.services?.map(s => s.name).join(', ') || 'No services';
+        const serviceIcon = b.services?.[0]?.icon || '🔧';
+        const totalDuration = b.services?.map(s => s.duration).join(' + ') || '—';
+        return `
+        <div class="booking-card">
+          <div class="booking-card-header">
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <div class="service-icon-circle">${serviceIcon}</div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:700;font-size:1rem;">${serviceNames}</div>
+                <div style="color:var(--text-muted);font-size:0.8rem;">Booked on ${formatDate(b.createdAt)}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              ${getStatusBadge(b.status)}
+              <span style="font-weight:800;color:var(--primary);font-size:1.05rem;">₹${b.totalAmount?.toLocaleString('en-IN') || '0'}</span>
+            </div>
+          </div>
+          <div class="booking-card-body">
+            <div class="booking-info-item">
+              <span class="booking-info-label">🚘 Vehicle No.</span>
+              <span class="booking-info-value">${b.vehicleNumber}</span>
+            </div>
+            <div class="booking-info-item">
+              <span class="booking-info-label">🏷 Brand</span>
+              <span class="booking-info-value">${b.vehicleBrand}</span>
+            </div>
+            ${b.vehicleModel ? `<div class="booking-info-item">
+              <span class="booking-info-label">🏎 Model</span>
+              <span class="booking-info-value">${b.vehicleModel}</span>
+            </div>` : ''}
+            <div class="booking-info-item">
+              <span class="booking-info-label">📅 Date</span>
+              <span class="booking-info-value">${formatDate(b.bookingDate)}</span>
+            </div>
+            <div class="booking-info-item">
+              <span class="booking-info-label">⏰ Time</span>
+              <span class="booking-info-value">${b.timeSlot || '09:00 AM'}</span>
+            </div>
+            <div class="booking-info-item">
+              <span class="booking-info-label">⏱ Duration</span>
+              <span class="booking-info-value">${totalDuration}</span>
+            </div>
+          </div>
+          ${b.notes ? `<div style="margin-top:0.75rem;padding:0.75rem;background:var(--bg-input);border-radius:var(--radius-sm);font-size:0.85rem;color:var(--text-muted);">
+            <strong>Note:</strong> ${b.notes}
+          </div>` : ''}
+          ${b.adminNotes ? `<div style="margin-top:0.5rem;padding:0.75rem;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-sm);font-size:0.85rem;color:var(--accent);">
+            <strong>Admin Note:</strong> ${b.adminNotes}
+          </div>` : ''}
+          <div class="booking-card-footer">
+            <span style="font-size:0.75rem;color:var(--text-muted);">Booking ID: #${b._id.slice(-8).toUpperCase()}</span>
+            ${['pending','confirmed'].includes(b.status) ? `
+              <button class="btn btn-danger btn-sm" onclick="openCancelModal('${b._id}')">
+                Cancel Booking
+              </button>` : ''}
+          </div>
+        </div>
+      `;}).join('');
+    }
+
+    function openCancelModal(id) {
+      cancelBookingId = id;
+      Modal.show('cancelModal');
+    }
+
+    document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
+      if (!cancelBookingId) return;
+      const btn = document.getElementById('confirmCancelBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      const res = await apiRequest(`/bookings/${cancelBookingId}`, 'DELETE', null, true);
+      Modal.hide('cancelModal');
+      btn.disabled = false;
+      btn.innerHTML = 'Yes, Cancel It';
+      cancelBookingId = null;
+
+      if (res.ok) {
+        Toast.success('Booking cancelled successfully');
+        await loadBookings();
+      } else {
+        Toast.error(res.data.message || 'Failed to cancel booking');
+      }
+    });
+  </script>
+</body>
+</html>

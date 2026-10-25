@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - AutoCare Service Hub</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .dash-header {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(59,130,246,0.05));
+      border: 1px solid rgba(249,115,22,0.1);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .user-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .user-stat-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .user-stat-value { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+    .user-stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: rgba(255,255,255,0.02); font-weight: 600; color: var(--text-secondary); }
+    tr:hover { background: rgba(255,255,255,0.02); }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">🚗</div>
+      <span class="nav-title">AutoCare Hub</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/admin-dashboard.html" class="active">Admin Dashboard</a></li>
+    </ul>
+    <div class="nav-actions" id="navActions"></div>
+  </nav>
+
+  <div class="page-container">
+    <div class="container" style="padding-top:2rem; padding-bottom:3rem;">
+      <div class="dash-header">
+        <div>
+          <h1 style="font-family:var(--font-heading); font-size:1.5rem; font-weight:800;">Admin Dashboard</h1>
+          <p style="color:var(--text-muted);">Manage all bookings and users</p>
+        </div>
+      </div>
+
+      <div class="user-stats" id="adminStats">
+        <div class="user-stat-card"><div class="user-stat-icon">👥</div><div class="user-stat-value" id="statUsers">0</div><div class="user-stat-label">Total Users</div></div>
+        <div class="user-stat-card"><div class="user-stat-icon">📋</div><div class="user-stat-value" id="statBookings">0</div><div class="user-stat-label">Total Bookings</div></div>
+        <div class="user-stat-card"><div class="user-stat-icon">🕐</div><div class="user-stat-value" id="statPending">0</div><div class="user-stat-label">Pending Bookings</div></div>
+        <div class="user-stat-card"><div class="user-stat-icon">💰</div><div class="user-stat-value" id="statRevenue">₹0</div><div class="user-stat-label">Total Revenue</div></div>
+      </div>
+
+      <h2 style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700;">All Bookings</h2>
+      
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Service</th>
+              <th>Date / Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Update Modal -->
+  <div class="modal-overlay" id="updateModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Booking</h3>
+        <div class="modal-close" onclick="Modal.hide('updateModal')">✕</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="updateStatus" class="form-control">
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Notes</label>
+        <textarea id="updateNotes" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="Modal.hide('updateModal')">Cancel</button>
+        <button class="btn btn-primary" id="saveUpdateBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let currentUpdateId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!Auth.requireAdmin()) return;
+      await loadStats();
+      await loadBookings();
+    });
+
+    async function loadStats() {
+      const res = await apiRequest('/admin/stats', 'GET', null, true);
+      if (res.ok && res.data.success) {
+        document.getElementById('statUsers').textContent = res.data.stats.totalUsers;
+        document.getElementById('statBookings').textContent = res.data.stats.totalBookings;
+        document.getElementById('statPending').textContent = res.data.stats.pendingBookings;
+        document.getElementById('statRevenue').textContent = '₹' + res.data.stats.revenue.toLocaleString('en-IN');
+      }
+    }
+
+    async function loadBookings() {
+      const res = await apiRequest('/admin/bookings', 'GET', null, true);
+      const tbody = document.getElementById('bookingsTableBody');
+      if (res.ok && res.data.success) {
+        if (!res.data.bookings.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No bookings found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = res.data.bookings.map(b => `
+          <tr>
+            <td>#${b._id.slice(-6).toUpperCase()}</td>
+            <td>
+              <div>${b.user.name}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">${b.user.email}</div>
+            </td>
+            <td>${b.services?.map(s => s.name).join(', ') || 'No Services'}</td>
+            <td>
+              <div>${new Date(b.bookingDate).toLocaleDateString('en-IN')}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">${b.timeSlot}</div>
+            </td>
+            <td>${getStatusBadge(b.status)}</td>
+            <td>
+              <button class="btn btn-sm btn-secondary" onclick="openUpdateModal('${b._id}', '${b.status}', '${b.adminNotes || ''}')">Update</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load bookings</td></tr>';
+      }
+    }
+
+    function openUpdateModal(id, status, notes) {
+      currentUpdateId = id;
+      document.getElementById('updateStatus').value = status;
+      document.getElementById('updateNotes').value = notes;
+      Modal.show('updateModal');
+    }
+
+    document.getElementById('saveUpdateBtn').addEventListener('click', async () => {
+      if (!currentUpdateId) return;
+      const status = document.getElementById('updateStatus').value;
+      const adminNotes = document.getElementById('updateNotes').value;
+      
+      const btn = document.getElementById('saveUpdateBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const res = await apiRequest(`/admin/bookings/${currentUpdateId}`, 'PUT', { status, adminNotes }, true);
+      
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+      
+      if (res.ok && res.data.success) {
+        Toast.success('Booking updated successfully');
+        Modal.hide('updateModal');
+        await loadBookings();
+        await loadStats();
+      } else {
+        Toast.error(res.data.message || 'Failed to update booking');
+      }
+    });
+  </script>
+</body>
+</html>
